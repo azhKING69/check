@@ -2,14 +2,14 @@ export type StudentTrack = 'mine' | 'hers';
 
 export interface PlacementTest {
   id: string;
-  track: StudentTrack;        // 'mine' (My College) vs 'hers' (Her College)
+  track: StudentTrack;        // 'mine' vs 'hers'
   companyName: string;        // e.g. "Google", "Goldman Sachs"
-  profileName: string;        // e.g. "Software Engineer", "Consultant"
+  profileName: string;        // e.g. "Software Engineer", "Associate Consultant"
   testDate: string;           // YYYY-MM-DD
   testTime: string;           // HH:MM (24-hour, e.g. "18:00")
-  durationMinutes?: number;   // e.g. 90 minutes (default 90)
-  testLink?: string;          // Platform link (Mettl, HackerEarth, etc.)
-  notes?: string;             // Syllabus, PPT links, etc.
+  durationMinutes?: number;   // default 90 minutes
+  testLink?: string;          // assessment portal URL
+  notes?: string;             // syllabus / instructions
   status?: 'Upcoming' | 'Ongoing' | 'Completed' | 'Shortlist Out';
   createdAt: string;
   updatedAt: string;

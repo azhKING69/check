@@ -22,9 +22,9 @@ export function detectClashes(tests: PlacementTest[]): ClashInfo[] {
       const herDuration = herTest.durationMinutes || 90;
       const herEnd = new Date(herStart.getTime() + herDuration * 60 * 1000);
 
-      // Check if dates match
+      // Compare dates
       if (myTest.testDate === herTest.testDate) {
-        // Overlapping slot condition: StartA < EndB and StartB < EndA
+        // Slot overlap: StartA < EndB and StartB < EndA
         const isTimeOverlap = myStart < herEnd && herStart < myEnd;
 
         if (isTimeOverlap) {
@@ -32,14 +32,14 @@ export function detectClashes(tests: PlacementTest[]): ClashInfo[] {
             test1: myTest,
             test2: herTest,
             type: 'direct_clash',
-            description: `DIRECT TIME CLASH! ${myTest.companyName} (${myTest.testTime}) and ${herTest.companyName} (${herTest.testTime}) overlap!`,
+            description: `Slot overlap: ${myTest.companyName} (${myTest.testTime}) overlaps with ${herTest.companyName} (${herTest.testTime}).`,
           });
         } else {
           clashes.push({
             test1: myTest,
             test2: herTest,
             type: 'same_day',
-            description: `Same Day: ${myTest.companyName} at ${myTest.testTime} & ${herTest.companyName} at ${herTest.testTime}`,
+            description: `Same-date scheduling: ${myTest.companyName} (${myTest.testTime}) and ${herTest.companyName} (${herTest.testTime}).`,
           });
         }
       }

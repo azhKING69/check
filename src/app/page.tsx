@@ -11,6 +11,7 @@ import {
 import { detectClashes, getTestDateTime } from '@/lib/clashDetector';
 import { isFirebaseConfigured } from '@/lib/firebase';
 import { Header } from '@/components/Header';
+import { KpiRibbon } from '@/components/KpiRibbon';
 import { NextTestBanner } from '@/components/NextTestBanner';
 import { ClashAlertBanner } from '@/components/ClashAlertBanner';
 import { TestTable } from '@/components/TestTable';
@@ -24,14 +25,12 @@ import {
   LayoutGrid,
   List,
   Download,
-  Calendar,
-  Sparkles,
   Share2,
 } from 'lucide-react';
 
 export default function PlacementNoticeBoard() {
   const [tests, setTests] = useState<PlacementTest[]>([]);
-  const [activeTrack, setActiveTrack] = useState<StudentTrack | 'combined'>('mine');
+  const [activeTrack, setActiveTrack] = useState<StudentTrack | 'combined'>('combined');
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
@@ -61,6 +60,15 @@ export default function PlacementNoticeBoard() {
     return () => unsubscribe();
   }, []);
 
+  // Current time state for hydration safety
+  const [currentTime, setCurrentTime] = useState<number>(0);
+
+  useEffect(() => {
+    setCurrentTime(Date.now());
+    const interval = setInterval(() => setCurrentTime(Date.now()), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Lock Admin
   const handleLockAdmin = () => {
     localStorage.removeItem('placement_admin_auth');
@@ -72,14 +80,7 @@ export default function PlacementNoticeBoard() {
     return detectClashes(tests);
   }, [tests]);
 
-  // Current time state to avoid SSR prerender drift
-  const [currentTime, setCurrentTime] = useState<number>(0);
-
-  useEffect(() => {
-    setCurrentTime(Date.now());
-    const interval = setInterval(() => setCurrentTime(Date.now()), 30000); // refresh every 30s
-    return () => clearInterval(interval);
-  }, []);
+  // Separate Upcoming vs Past tests
   const sortedAllTests = useMemo(() => {
     return [...tests].sort((a, b) => {
       const timeA = getTestDateTime(a.testDate, a.testTime).getTime();
@@ -116,7 +117,7 @@ export default function PlacementNoticeBoard() {
         );
         return end.getTime() < currentTime;
       })
-      .reverse(); // Most recent past first
+      .reverse();
   }, [trackFilteredTests, currentTime]);
 
   // Filtered by search & active tab
@@ -153,7 +154,7 @@ export default function PlacementNoticeBoard() {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete "${name}"?`)) {
+    if (confirm(`Confirm deletion of record: "${name}"?`)) {
       await deletePlacementTest(id);
     }
   };
@@ -166,20 +167,20 @@ export default function PlacementNoticeBoard() {
     }
   };
 
-  // CSV Export for sharing or personal spreadsheet
+  // CSV Export for tabular records
   const handleExportCSV = () => {
     const headers = [
-      'Track',
-      'Company Name',
-      'Profile',
-      'Test Date',
-      'Test Time',
-      'Duration (mins)',
-      'Test Link',
-      'Notes',
+      'Candidate Track',
+      'Organization',
+      'Role Profile',
+      'Assessment Date',
+      'Slot Time',
+      'Duration (Minutes)',
+      'Portal Link',
+      'Instructions',
     ];
     const rows = trackFilteredTests.map((t) => [
-      t.track === 'mine' ? 'My College' : 'Her College',
+      t.track === 'mine' ? 'Candidate 1 (Primary)' : 'Candidate 2 (Partner)',
       `"${t.companyName.replace(/"/g, '""')}"`,
       `"${t.profileName.replace(/"/g, '""')}"`,
       t.testDate,
@@ -196,7 +197,7 @@ export default function PlacementNoticeBoard() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `placement_tests_${activeTrack}.csv`);
+    link.setAttribute('download', `assessment_schedule_${activeTrack}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -206,13 +207,13 @@ export default function PlacementNoticeBoard() {
   const handleShareLink = () => {
     if (typeof window !== 'undefined') {
       navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard! You can share this with your batchmates.');
+      alert('Ledger URL copied to clipboard.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors">
-      {/* Sticky Header */}
+    <div className="min-h-screen bg-[#F9FAFB] text-[#111827] flex flex-col w-full font-sans antialiased">
+      {/* Institutional Top Header */}
       <Header
         activeTrack={activeTrack}
         setActiveTrack={setActiveTrack}
@@ -225,108 +226,115 @@ export default function PlacementNoticeBoard() {
         onOpenCloudModal={() => setIsCloudModalOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Next Test Countdown Hero */}
+      {/* Main Viewport Container */}
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 space-y-4 sm:space-y-6">
+        {/* KPI Metric Ribbon (2-column mobile, 4-column desktop) */}
+        <KpiRibbon
+          upcomingTests={upcomingTests}
+          pastTests={pastTests}
+          clashes={clashes}
+        />
+
+        {/* Immediate Assessment Focus Card */}
         <NextTestBanner upcomingTests={upcomingTests} />
 
-        {/* Clash Alert Radar Banner (Direct slot conflicts & same-day warnings) */}
+        {/* Slot Conflict Radar */}
         <ClashAlertBanner clashes={clashes} />
 
-        {/* Search, Filter Tabs & Layout Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-          {/* Tabs: Upcoming vs Past vs All */}
-          <div className="inline-flex p-1 bg-zinc-200/60 dark:bg-zinc-800/60 rounded-xl text-xs sm:text-sm font-medium self-start">
+        {/* Action Bar & Controls: Strict Single-Row Mobile Header Rule */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 min-w-0 pt-1">
+          {/* Status Tabs: Upcoming vs Past vs All */}
+          <div className="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold self-start border border-slate-200/60">
             <button
               onClick={() => setActiveTab('upcoming')}
-              className={`px-3 py-1.5 rounded-lg transition ${
+              className={`px-3 py-1 rounded-md transition cursor-pointer ${
                 activeTab === 'upcoming'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Upcoming ({upcomingTests.length})
             </button>
             <button
               onClick={() => setActiveTab('past')}
-              className={`px-3 py-1.5 rounded-lg transition ${
+              className={`px-3 py-1 rounded-md transition cursor-pointer ${
                 activeTab === 'past'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Past ({pastTests.length})
             </button>
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-lg transition ${
+              className={`px-3 py-1 rounded-md transition cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               All ({trackFilteredTests.length})
             </button>
           </div>
 
-          {/* Search Bar & Actions */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+          {/* Search Bar & Layout Suite */}
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1 sm:w-60">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
               <input
                 type="text"
-                placeholder="Search company or profile..."
+                placeholder="Filter by company or profile..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs sm:text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-8 pr-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-hidden focus:border-slate-900 transition"
               />
             </div>
 
-            {/* View Mode Switcher */}
-            <div className="flex items-center bg-zinc-200/60 dark:bg-zinc-800/60 p-1 rounded-xl">
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/60">
               <button
                 onClick={() => setViewMode('table')}
-                title="Table View"
-                className={`p-1.5 rounded-lg transition ${
+                title="Tabular Ledger View"
+                className={`p-1.5 rounded-md transition cursor-pointer ${
                   viewMode === 'table'
-                    ? 'bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                <List className="w-4 h-4" />
+                <List className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewMode('cards')}
-                title="Cards View"
-                className={`p-1.5 rounded-lg transition ${
+                title="Card View"
+                className={`p-1.5 rounded-md transition cursor-pointer ${
                   viewMode === 'cards'
-                    ? 'bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Share / Export */}
+            {/* Utility Actions */}
             <button
               onClick={handleShareLink}
-              title="Share Link"
-              className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition shadow-xs"
+              title="Copy share link"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition cursor-pointer shadow-xs"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleExportCSV}
-              title="Export as CSV"
-              className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition shadow-xs"
+              title="Export as CSV Ledger"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition cursor-pointer shadow-xs"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Content View: Table or Cards */}
+        {/* Desktop Tabular View (Section 6.2) */}
         {viewMode === 'table' ? (
           <div className="hidden sm:block">
             <TestTable
@@ -339,11 +347,11 @@ export default function PlacementNoticeBoard() {
           </div>
         ) : null}
 
-        {/* Mobile View or Cards mode */}
+        {/* Mobile View: 3-Column Data Strip Pattern (Section 5.2) */}
         <div
           className={`${
             viewMode === 'table' ? 'sm:hidden' : ''
-          } grid grid-cols-1 md:grid-cols-2 gap-3.5`}
+          } grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-w-0`}
         >
           {displayedTests.map((test) => (
             <TestCard
@@ -357,31 +365,30 @@ export default function PlacementNoticeBoard() {
           ))}
 
           {displayedTests.length === 0 && (
-            <div className="col-span-full py-12 text-center border border-dashed border-zinc-300 dark:border-zinc-800 rounded-2xl">
-              <Calendar className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                No tests match your filter
+            <div className="col-span-full py-10 text-center rounded-xl border border-slate-200 bg-white shadow-xs">
+              <p className="text-xs font-bold text-slate-900">
+                No matching assessment records
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                Try switching between Upcoming and Past, or clear the search query.
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Switch filters or record a new test schedule.
               </p>
             </div>
           )}
         </div>
       </main>
 
-      {/* Floating Action Button for Mobile Admin */}
+      {/* Floating Action Trigger for Mobile Admin */}
       {isAdmin && (
         <button
           onClick={handleOpenAdd}
-          title="Add New Test"
-          className="fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center active:scale-95 transition"
+          title="Record New Assessment"
+          className="fixed bottom-5 right-5 z-40 sm:hidden w-12 h-12 rounded-full bg-slate-900 text-white shadow-lg flex items-center justify-center active:scale-95 transition cursor-pointer"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-5 h-5" />
         </button>
       )}
 
-      {/* Modals */}
+      {/* Institutional Modals */}
       <TestModal
         isOpen={isTestModalOpen}
         onClose={() => setIsTestModalOpen(false)}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PlacementTest, PlacementTestInput, StudentTrack } from '@/types/placement';
-import { X, Calendar, Clock, Building, Briefcase, Link as LinkIcon, FileText } from 'lucide-react';
+import { X, Calendar } from 'lucide-react';
 
 interface TestModalProps {
   isOpen: boolean;
@@ -43,7 +43,6 @@ export const TestModal: React.FC<TestModalProps> = ({
       setTrack(defaultTrack);
       setCompanyName('');
       setProfileName('');
-      // Default to today or tomorrow
       setTestDate(new Date().toISOString().split('T')[0]);
       setTestTime('18:00');
       setDurationMinutes(90);
@@ -57,7 +56,7 @@ export const TestModal: React.FC<TestModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName || !profileName || !testDate || !testTime) {
-      alert('Please fill in Company Name, Profile, Date, and Time!');
+      alert('Required fields: Company Name, Profile, Date, and Time.');
       return;
     }
 
@@ -77,132 +76,127 @@ export const TestModal: React.FC<TestModalProps> = ({
       onClose();
     } catch (err) {
       console.error('Submit error:', err);
-      alert('Failed to save test. Please try again.');
+      alert('Unable to persist record. Verify network connection.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-            {editingTest ? 'Edit Placement Test' : 'Add New Placement Test'}
-          </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+        {/* Modal Header */}
+        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+          <div className="flex items-center space-x-2">
+            <span className="p-1 rounded-md bg-slate-100 text-slate-800">
+              <Calendar className="w-4 h-4" />
+            </span>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              {editingTest ? 'Edit Assessment Record' : 'Record New Assessment'}
+            </h3>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Track Selector */}
+        {/* Modal Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          {/* Candidate Assignment */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
-              Whose College is this for?
+            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              Candidate Assignment
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setTrack('mine')}
-                className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold border transition ${
+                className={`py-2 px-3 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                   track === 'mine'
-                    ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 text-blue-700 dark:text-blue-300 shadow-xs'
-                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                🎓 My College
+                Candidate 1 (Primary)
               </button>
               <button
                 type="button"
                 onClick={() => setTrack('hers')}
-                className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold border transition ${
+                className={`py-2 px-3 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                   track === 'hers'
-                    ? 'bg-rose-50 dark:bg-rose-950 border-rose-500 text-rose-700 dark:text-rose-300 shadow-xs'
-                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                🌸 Her College
+                Candidate 2 (Partner)
               </button>
             </div>
           </div>
 
           {/* Company Name */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-              Company Name <span className="text-rose-500">*</span>
+            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              Organization / Company <span className="text-rose-500">*</span>
             </label>
-            <div className="relative">
-              <Building className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                required
-                placeholder="e.g. Google, Microsoft, Bain"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Goldman Sachs, Google, Bain"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
+            />
           </div>
 
-          {/* Profile Name */}
+          {/* Role Profile */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-              Profile / Role Name <span className="text-rose-500">*</span>
+            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              Role Profile <span className="text-rose-500">*</span>
             </label>
-            <div className="relative">
-              <Briefcase className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                required
-                placeholder="e.g. Software Engineer (SDE), Analyst"
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Software Engineer, Technology Analyst"
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
+            />
           </div>
 
-          {/* Date, Time & Duration row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Date, Time, Duration Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
                 Date <span className="text-rose-500">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  required
-                  value={testDate}
-                  onChange={(e) => setTestDate(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              <input
+                type="date"
+                required
+                value={testDate}
+                onChange={(e) => setTestDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Time <span className="text-rose-500">*</span>
+              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                Start Time <span className="text-rose-500">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="time"
-                  required
-                  value={testTime}
-                  onChange={(e) => setTestTime(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              <input
+                type="time"
+                required
+                value={testTime}
+                onChange={(e) => setTestTime(e.target.value)}
+                className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Duration (mins)
+              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                Duration (Mins)
               </label>
               <input
                 type="number"
@@ -211,60 +205,54 @@ export const TestModal: React.FC<TestModalProps> = ({
                 placeholder="90"
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
               />
             </div>
           </div>
 
-          {/* Test Link (Optional) */}
+          {/* Test Link */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-              Test Portal / Meeting Link (Optional)
+            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              Portal URL / Platform Link
             </label>
-            <div className="relative">
-              <LinkIcon className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
-              <input
-                type="url"
-                placeholder="https://..."
-                value={testLink}
-                onChange={(e) => setTestLink(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <input
+              type="url"
+              placeholder="https://hackerearth.com/..."
+              value={testLink}
+              onChange={(e) => setTestLink(e.target.value)}
+              className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
+            />
           </div>
 
-          {/* Notes (Optional) */}
+          {/* Notes */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-              Notes / Syllabus / Shortlist info (Optional)
+            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              Assessment Instructions / Syllabus
             </label>
-            <div className="relative">
-              <FileText className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
-              <textarea
-                rows={2}
-                placeholder="e.g. 2 coding problems + 20 MCQs. PPT at 4:30 PM."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <textarea
+              rows={2}
+              placeholder="e.g. 2 Programming problems (DSA), 20 Aptitude MCQs."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
+            />
           </div>
 
-          {/* Submit Actions */}
-          <div className="pt-2 flex items-center justify-end gap-2">
+          {/* Action Row */}
+          <div className="pt-2 flex items-center justify-end space-x-2 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white shadow-sm transition disabled:opacity-50"
+              className="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shadow-xs disabled:opacity-50"
             >
-              {isSubmitting ? 'Saving...' : editingTest ? 'Update Test' : 'Post to Board'}
+              {isSubmitting ? 'Persisting...' : editingTest ? 'Update Record' : 'Record Assessment'}
             </button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lock, X, KeyRound, Check } from 'lucide-react';
+import { Lock, X, KeyRound } from 'lucide-react';
 
 interface AdminPinModalProps {
   isOpen: boolean;
@@ -35,30 +35,31 @@ export const AdminPinModal: React.FC<AdminPinModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-between pb-3">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-              <KeyRound className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-              Admin Unlock
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-sm w-full p-5 sm:p-6 space-y-4">
+        {/* Header */}
+        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+          <div className="flex items-center space-x-2">
+            <span className="p-1 rounded-md bg-slate-100 text-slate-800">
+              <KeyRound className="w-4 h-4" />
+            </span>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              Administrative Authentication
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-          Enter your 4-digit Master PIN to add, edit, or delete placement tests from your phone.
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Provide the 4-digit Master PIN to unlock scheduling mutation rights from this device.
         </p>
 
-        <form onSubmit={handleVerify} className="mt-4 space-y-4">
+        <form onSubmit={handleVerify} className="space-y-3 pt-1">
           <div>
             <input
               type="password"
@@ -72,28 +73,28 @@ export const AdminPinModal: React.FC<AdminPinModalProps> = ({
                 setError(false);
                 setPin(e.target.value);
               }}
-              className="w-full text-center tracking-widest text-xl font-mono py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="w-full text-center tracking-widest text-lg font-mono py-2.5 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
             />
             {error && (
-              <p className="text-xs text-rose-500 font-medium text-center mt-2">
-                Incorrect PIN. (Default is 1234).
+              <p className="text-xs font-semibold text-rose-600 text-center mt-2">
+                Authentication failed. Incorrect PIN.
               </p>
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex space-x-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="w-1/2 py-2.5 text-xs font-semibold rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="w-1/2 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="w-1/2 py-2.5 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white shadow-sm"
+              className="w-1/2 py-2 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition cursor-pointer shadow-xs"
             >
-              Unlock
+              Authenticate
             </button>
           </div>
         </form>
