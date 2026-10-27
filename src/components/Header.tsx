@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
               <Calendar className="w-4 h-4 text-slate-100" />
             </div>
             <span className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">
-              Placement Ledger
+              Placement Schedule
             </span>
           </div>
 

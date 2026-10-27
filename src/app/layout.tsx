@@ -2,13 +2,17 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Placement Schedule & Assessment Ledger",
-  description: "High-density institutional schedule tracker and slot conflict radar for campus assessments.",
+  title: "Placement Schedule",
+  description: "Live schedule tracker and slot conflict radar for campus assessments.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Placement Ledger",
+    title: "Placement Schedule",
   },
 };
 

@@ -1,16 +1,16 @@
 {
-  "name": "Placement Test Notice Board",
-  "short_name": "Placements",
-  "description": "Live sorted schedule for campus placement tests and clash detection",
+  "name": "Placement Schedule",
+  "short_name": "Schedule",
+  "description": "Live schedule tracker and slot conflict radar for campus assessments",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#2563eb",
+  "background_color": "#F9FAFB",
+  "theme_color": "#0F172A",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
