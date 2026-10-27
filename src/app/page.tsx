@@ -224,8 +224,8 @@ export default function PlacementNoticeBoard() {
         {/* Immediate Assessment Focus Card */}
         <NextTestBanner upcomingTests={upcomingTests} />
 
-        {/* Slot Conflict Radar */}
-        <ClashAlertBanner clashes={clashes} />
+        {/* Slot Conflict Radar: Only displayed on the Conflict / Dual page */}
+        {activeTrack === 'combined' && <ClashAlertBanner clashes={clashes} />}
 
         {/* Action Bar & Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 min-w-0 pt-1">
@@ -328,7 +328,7 @@ export default function PlacementNoticeBoard() {
               isAdmin={isAdmin}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              clashes={clashes}
+              clashes={activeTrack === 'combined' ? clashes : []}
             />
           </div>
         ) : null}
@@ -346,7 +346,7 @@ export default function PlacementNoticeBoard() {
               isAdmin={isAdmin}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              clashes={clashes}
+              clashes={activeTrack === 'combined' ? clashes : []}
             />
           ))}
 

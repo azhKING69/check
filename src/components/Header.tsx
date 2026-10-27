@@ -99,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            <span>Dual Schedule & Conflicts</span>
+            <span>Conflict</span>
             {clashCount > 0 && (
               <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                 {clashCount}
