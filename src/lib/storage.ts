@@ -9,6 +9,7 @@ import {
   doc,
   query,
   orderBy,
+  writeBatch,
 } from 'firebase/firestore';
 
 const LOCAL_STORAGE_KEY = 'placement_ledger_v2';
@@ -73,6 +74,17 @@ const INITIAL_SAMPLE_DATA: PlacementTest[] = [
   },
 ];
 
+// Helper to remove any undefined values so Firestore never throws
+function cleanForFirestore<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: Record<string, any> = {};
+  for (const key of Object.keys(obj)) {
+    if (obj[key] !== undefined) {
+      cleaned[key] = obj[key];
+    }
+  }
+  return cleaned as Partial<T>;
+}
+
 // Active subscribers in this window/tab
 const subscribers = new Set<(tests: PlacementTest[]) => void>();
 
@@ -114,17 +126,18 @@ function saveLocalData(tests: PlacementTest[]) {
   }
 }
 
+let isSeeding = false;
+
 export function subscribeToTests(
   onUpdate: (tests: PlacementTest[]) => void
 ): () => void {
-  // Register callback
   subscribers.add(onUpdate);
 
-  // Immediately feed current local cache
+  // Immediately feed local cached state
   const initialData = getLocalData();
   onUpdate(initialData);
 
-  // Listen for local tab events
+  // Cross-tab and in-tab local events
   const handleLocalEvent = (e: Event) => {
     const custom = e as CustomEvent<PlacementTest[]>;
     if (custom.detail) {
@@ -145,14 +158,30 @@ export function subscribeToTests(
     window.addEventListener('storage', handleCrossTabStorage);
   }
 
-  // If Firebase is active, also listen to cloud Firestore updates
+  // Live Firestore cloud listener
   let unsubscribeFirestore: (() => void) | null = null;
   if (isFirebaseConfigured && db) {
     try {
       const q = query(collection(db, 'placement_tests'), orderBy('testDate', 'asc'));
       unsubscribeFirestore = onSnapshot(
         q,
-        (snapshot) => {
+        async (snapshot) => {
+          if (snapshot.empty && !isSeeding) {
+            // Seed initial records to Firestore so cloud database starts populated
+            isSeeding = true;
+            try {
+              for (const item of INITIAL_SAMPLE_DATA) {
+                const { id, ...rest } = item;
+                await addDoc(collection(db!, 'placement_tests'), cleanForFirestore(rest));
+              }
+            } catch (seedErr) {
+              console.warn('Auto-seed note:', seedErr);
+            } finally {
+              isSeeding = false;
+            }
+            return;
+          }
+
           if (!snapshot.empty) {
             const cloudTests: PlacementTest[] = [];
             snapshot.forEach((docSnap) => {
@@ -166,11 +195,11 @@ export function subscribeToTests(
           }
         },
         (error) => {
-          console.warn('Firestore live listener warning (using local store):', error.message);
+          console.warn('Firestore subscription active using fallback:', error.message);
         }
       );
     } catch (e) {
-      console.warn('Failed to attach Firestore onSnapshot:', e);
+      console.warn('Failed to attach Firestore listener:', e);
     }
   }
 
@@ -196,30 +225,30 @@ export async function addPlacementTest(
     updatedAt: new Date().toISOString(),
   };
 
-  // 1. Instant optimistic update to local cache & active UI
+  // 1. Instant local optimistic update
   const current = getLocalData();
   const updated = [newRecord, ...current];
   saveLocalData(updated);
   notifySubscribers(updated);
 
-  // 2. Asynchronous write to Firestore (with 5-second timeout so it never blocks)
+  // 2. Clean fields and write to cloud Firestore
   if (isFirebaseConfigured && db) {
     try {
-      const writePromise = addDoc(collection(db, 'placement_tests'), {
+      const payload = cleanForFirestore({
         ...input,
         createdAt: newRecord.createdAt,
         updatedAt: newRecord.updatedAt,
       });
 
+      const writePromise = addDoc(collection(db, 'placement_tests'), payload);
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Firestore write timeout')), 5000)
+        setTimeout(() => reject(new Error('Firestore write timeout')), 6000)
       );
 
       const docRef = await Promise.race([writePromise, timeoutPromise]);
       newRecord.id = docRef.id;
     } catch (err: any) {
       console.warn('Firestore cloud sync notice:', err?.message || err);
-      // Local state is already updated and safe!
     }
   }
 
@@ -232,7 +261,7 @@ export async function updatePlacementTest(
 ): Promise<void> {
   const updatedAt = new Date().toISOString();
 
-  // 1. Instant optimistic update locally
+  // 1. Instant local optimistic update
   const current = getLocalData();
   const updated = current.map((t) =>
     t.id === id ? { ...t, ...input, updatedAt } : t
@@ -240,17 +269,18 @@ export async function updatePlacementTest(
   saveLocalData(updated);
   notifySubscribers(updated);
 
-  // 2. Asynchronous write to Firestore
+  // 2. Cloud Firestore update
   if (isFirebaseConfigured && db) {
     try {
-      const docRef = doc(db, 'placement_tests', id);
-      const writePromise = updateDoc(docRef, {
+      const payload = cleanForFirestore({
         ...input,
         updatedAt,
       });
 
+      const docRef = doc(db, 'placement_tests', id);
+      const writePromise = updateDoc(docRef, payload);
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Firestore update timeout')), 5000)
+        setTimeout(() => reject(new Error('Firestore update timeout')), 6000)
       );
 
       await Promise.race([writePromise, timeoutPromise]);
@@ -261,20 +291,19 @@ export async function updatePlacementTest(
 }
 
 export async function deletePlacementTest(id: string): Promise<void> {
-  // 1. Instant optimistic delete locally
+  // 1. Instant local optimistic delete
   const current = getLocalData();
   const updated = current.filter((t) => t.id !== id);
   saveLocalData(updated);
   notifySubscribers(updated);
 
-  // 2. Asynchronous delete in Firestore
+  // 2. Cloud Firestore delete
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, 'placement_tests', id);
       const deletePromise = deleteDoc(docRef);
-
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Firestore delete timeout')), 5000)
+        setTimeout(() => reject(new Error('Firestore delete timeout')), 6000)
       );
 
       await Promise.race([deletePromise, timeoutPromise]);

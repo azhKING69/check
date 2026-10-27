@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -20,10 +20,17 @@ export const isFirebaseConfigured = Boolean(
 if (isFirebaseConfigured) {
   try {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    db = initializeFirestore(app, {
+      ignoreUndefinedProperties: true,
+    });
   } catch (error) {
-    console.warn('Firebase initialization error:', error);
-    db = null;
+    console.warn('Firebase initialization error, fallback to default getFirestore:', error);
+    try {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    } catch {
+      db = null;
+    }
   }
 }
 
