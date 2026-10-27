@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lock, X, KeyRound } from 'lucide-react';
+import { X, KeyRound } from 'lucide-react';
 
 interface AdminPinModalProps {
   isOpen: boolean;
@@ -67,7 +67,6 @@ export const AdminPinModal: React.FC<AdminPinModalProps> = ({
               pattern="[0-9]*"
               maxLength={6}
               autoFocus
-              placeholder="Enter PIN (Default: 1234)"
               value={pin}
               onChange={(e) => {
                 setError(false);

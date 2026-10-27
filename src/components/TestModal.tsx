@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PlacementTest, PlacementTestInput, StudentTrack } from '@/types/placement';
-import { X, Calendar } from 'lucide-react';
+import { X, Calendar, Search, Check } from 'lucide-react';
 
 interface TestModalProps {
   isOpen: boolean;
@@ -11,6 +11,41 @@ interface TestModalProps {
   editingTest?: PlacementTest | null;
   defaultTrack: StudentTrack;
 }
+
+const PREDEFINED_ROLES = [
+  // SDE & Engineering
+  'Software Engineer',
+  'Software Developer',
+  'SDE (Software Development Engineer)',
+  'Associate Software Engineer',
+  'Graduate Software Engineer',
+  'Frontend Engineer',
+  'Backend Engineer',
+  'Full Stack Engineer',
+  'Systems Engineer',
+  'DevOps Engineer',
+  // AI & Machine Learning
+  'AI Engineer',
+  'Machine Learning Engineer',
+  'Applied ML Engineer',
+  'AI Research Scientist',
+  // Data & Analytics
+  'Data Scientist',
+  'Data Analyst',
+  'Data Engineer',
+  'Business Intelligence Analyst',
+  'Quantitative Analyst',
+  'Quantitative Researcher',
+  // Consulting, Management & Business
+  'Management Trainee',
+  'Business Analyst',
+  'Technology Analyst',
+  'Associate Consultant',
+  'Management Consultant',
+  'Strategy & Operations Analyst',
+  'Product Manager',
+  'Associate Product Manager (APM)',
+];
 
 export const TestModal: React.FC<TestModalProps> = ({
   isOpen,
@@ -25,9 +60,13 @@ export const TestModal: React.FC<TestModalProps> = ({
   const [testDate, setTestDate] = useState('');
   const [testTime, setTestTime] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(90);
-  const [testLink, setTestLink] = useState('');
-  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Suggestions state
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const roleInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editingTest) {
@@ -37,8 +76,6 @@ export const TestModal: React.FC<TestModalProps> = ({
       setTestDate(editingTest.testDate);
       setTestTime(editingTest.testTime);
       setDurationMinutes(editingTest.durationMinutes || 90);
-      setTestLink(editingTest.testLink || '');
-      setNotes(editingTest.notes || '');
     } else {
       setTrack(defaultTrack);
       setCompanyName('');
@@ -47,10 +84,48 @@ export const TestModal: React.FC<TestModalProps> = ({
       setTestDate(tomorrow.toISOString().split('T')[0]);
       setTestTime('18:00');
       setDurationMinutes(90);
-      setTestLink('');
-      setNotes('');
     }
+    setShowSuggestions(false);
+    setHighlightedIndex(-1);
   }, [editingTest, defaultTrack, isOpen]);
+
+  // Filter suggestions based on typed input
+  const filteredSuggestions = React.useMemo(() => {
+    if (!profileName.trim()) return [];
+    const query = profileName.toLowerCase().trim();
+    return PREDEFINED_ROLES.filter((role) =>
+      role.toLowerCase().includes(query)
+    ).slice(0, 6);
+  }, [profileName]);
+
+  const handleSelectRole = (role: string) => {
+    setProfileName(role);
+    setShowSuggestions(false);
+    setHighlightedIndex(-1);
+  };
+
+  const handleKeyDownRole = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || filteredSuggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < filteredSuggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredSuggestions.length - 1
+      );
+    } else if (e.key === 'Enter') {
+      if (highlightedIndex >= 0 && highlightedIndex < filteredSuggestions.length) {
+        e.preventDefault();
+        handleSelectRole(filteredSuggestions[highlightedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -70,8 +145,6 @@ export const TestModal: React.FC<TestModalProps> = ({
         testDate,
         testTime,
         durationMinutes: Number(durationMinutes) || 90,
-        testLink: testLink.trim() || undefined,
-        notes: notes.trim() || undefined,
         status: 'Upcoming',
       });
       onClose();
@@ -85,7 +158,7 @@ export const TestModal: React.FC<TestModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex justify-between items-center pb-3 border-b border-slate-100">
           <div className="flex items-center space-x-2">
@@ -93,7 +166,7 @@ export const TestModal: React.FC<TestModalProps> = ({
               <Calendar className="w-4 h-4" />
             </span>
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              {editingTest ? 'Edit Assessment Record' : 'Record New Assessment'}
+              {editingTest ? 'Edit Assessment' : 'New Assessment'}
             </h3>
           </div>
           <button
@@ -106,10 +179,10 @@ export const TestModal: React.FC<TestModalProps> = ({
 
         {/* Modal Form */}
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          {/* Candidate Assignment */}
+          {/* Candidate Selection: PIPI vs Chintu */}
           <div>
             <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-              Candidate Assignment
+              Candidate
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -121,7 +194,7 @@ export const TestModal: React.FC<TestModalProps> = ({
                     : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                Candidate 1 (Primary)
+                PIPI
               </button>
               <button
                 type="button"
@@ -132,43 +205,83 @@ export const TestModal: React.FC<TestModalProps> = ({
                     : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                Candidate 2 (Partner)
+                Chintu
               </button>
             </div>
           </div>
 
-          {/* Company Name */}
+          {/* Company Name (No Placeholder) */}
           <div>
             <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-              Organization / Company <span className="text-rose-500">*</span>
+              Company <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. Goldman Sachs, Google, Bain"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
             />
           </div>
 
-          {/* Role Profile */}
-          <div>
+          {/* Role Profile with Google-style Autocomplete */}
+          <div className="relative">
             <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
               Role Profile <span className="text-rose-500">*</span>
             </label>
             <input
+              ref={roleInputRef}
               type="text"
               required
-              placeholder="e.g. Software Engineer, Technology Analyst"
               value={profileName}
-              onChange={(e) => setProfileName(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onChange={(e) => {
+                setProfileName(e.target.value);
+                setShowSuggestions(true);
+                setHighlightedIndex(-1);
+              }}
+              onKeyDown={handleKeyDownRole}
               className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
             />
+
+            {/* Google-like Autocomplete Dropdown */}
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div
+                ref={suggestionsRef}
+                className="absolute z-50 left-0 right-0 mt-1 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden py-1 divide-y divide-slate-100"
+              >
+                {filteredSuggestions.map((suggestion, index) => {
+                  const isHighlighted = index === highlightedIndex;
+                  return (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // prevent blur
+                        handleSelectRole(suggestion);
+                      }}
+                      className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition cursor-pointer ${
+                        isHighlighted
+                          ? 'bg-slate-100 text-slate-900 font-semibold'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Search className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span>{suggestion}</span>
+                      </div>
+                      {profileName.toLowerCase() === suggestion.toLowerCase() && (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Date, Time, Duration Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          {/* Date & Time Grid */}
+          <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
                 Date <span className="text-rose-500">*</span>
@@ -184,7 +297,7 @@ export const TestModal: React.FC<TestModalProps> = ({
 
             <div>
               <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                Start Time <span className="text-rose-500">*</span>
+                Time <span className="text-rose-500">*</span>
               </label>
               <input
                 type="time"
@@ -194,47 +307,19 @@ export const TestModal: React.FC<TestModalProps> = ({
                 className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
               />
             </div>
-
-            <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                Duration (Mins)
-              </label>
-              <input
-                type="number"
-                min="15"
-                step="15"
-                placeholder="90"
-                value={durationMinutes}
-                onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
-              />
-            </div>
           </div>
 
-          {/* Test Link */}
+          {/* Duration in Minutes */}
           <div>
             <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-              Portal URL / Platform Link
+              Duration (Minutes)
             </label>
             <input
-              type="url"
-              placeholder="https://hackerearth.com/..."
-              value={testLink}
-              onChange={(e) => setTestLink(e.target.value)}
-              className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
-            />
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-              Assessment Instructions / Syllabus
-            </label>
-            <textarea
-              rows={2}
-              placeholder="e.g. 2 Programming problems (DSA), 20 Aptitude MCQs."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              type="number"
+              min="15"
+              step="15"
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(Number(e.target.value))}
               className="w-full px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 focus:outline-hidden transition"
             />
           </div>
@@ -253,7 +338,7 @@ export const TestModal: React.FC<TestModalProps> = ({
               disabled={isSubmitting}
               className="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shadow-xs disabled:opacity-50"
             >
-              {isSubmitting ? 'Persisting...' : editingTest ? 'Update Record' : 'Record Assessment'}
+              {isSubmitting ? 'Saving...' : editingTest ? 'Update Record' : 'Record Assessment'}
             </button>
           </div>
         </form>

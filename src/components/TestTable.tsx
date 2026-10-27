@@ -5,7 +5,6 @@ import { PlacementTest, ClashInfo } from '@/types/placement';
 import { getGoogleCalendarUrl } from '@/lib/calendar';
 import {
   Clock,
-  ExternalLink,
   Edit2,
   Trash2,
   CalendarPlus,
@@ -55,11 +54,10 @@ export const TestTable: React.FC<TestTableProps> = ({
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
             <tr>
-              <th className="py-2.5 px-3 sm:px-4">Track</th>
-              <th className="py-2.5 px-3 sm:px-4">Organization / Company</th>
+              <th className="py-2.5 px-3 sm:px-4">Candidate</th>
+              <th className="py-2.5 px-3 sm:px-4">Company</th>
               <th className="py-2.5 px-3 sm:px-4">Role Profile</th>
               <th className="py-2.5 px-3 sm:px-4">Date & Slot</th>
-              <th className="py-2.5 px-3 sm:px-4">Portal / Instructions</th>
               <th className="py-2.5 px-3 sm:px-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -89,7 +87,7 @@ export const TestTable: React.FC<TestTableProps> = ({
                           : 'bg-purple-50 text-purple-700 border-purple-200/80'
                       }`}
                     >
-                      {test.track === 'mine' ? 'Candidate 1' : 'Candidate 2'}
+                      {test.track === 'mine' ? 'PIPI' : 'Chintu'}
                     </span>
                   </td>
 
@@ -125,31 +123,6 @@ export const TestTable: React.FC<TestTableProps> = ({
                       <Clock className="w-3 h-3 text-slate-400" />
                       <span>{test.testTime}</span>
                       <span className="text-slate-400">({test.durationMinutes || 90}m)</span>
-                    </div>
-                  </td>
-
-                  {/* Portal & Instructions */}
-                  <td className="py-3 px-3 sm:px-4 max-w-[240px]">
-                    <div className="space-y-0.5">
-                      {test.testLink && (
-                        <a
-                          href={test.testLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-1 text-xs text-blue-600 font-semibold hover:underline"
-                        >
-                          <span>Portal Access</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                      {test.notes && (
-                        <p className="text-[11px] text-slate-500 truncate" title={test.notes}>
-                          {test.notes}
-                        </p>
-                      )}
-                      {!test.testLink && !test.notes && (
-                        <span className="text-slate-400 text-[11px]">-</span>
-                      )}
                     </div>
                   </td>
 

@@ -4,13 +4,10 @@ import React from 'react';
 import { PlacementTest, ClashInfo } from '@/types/placement';
 import { getGoogleCalendarUrl } from '@/lib/calendar';
 import {
-  ExternalLink,
   Edit2,
   Trash2,
   CalendarPlus,
   AlertCircle,
-  Clock,
-  Calendar,
 } from 'lucide-react';
 
 interface TestCardProps {
@@ -60,7 +57,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                   : 'bg-purple-50 text-purple-700 border-purple-200/80'
               }`}
             >
-              {test.track === 'mine' ? 'Candidate 1' : 'Candidate 2'}
+              {test.track === 'mine' ? 'PIPI' : 'Chintu'}
             </span>
 
             {isClash && (
@@ -112,15 +109,8 @@ export const TestCard: React.FC<TestCardProps> = ({
         </div>
       </div>
 
-      {/* Optional Notes */}
-      {test.notes && (
-        <p className="text-[11px] text-slate-500 line-clamp-2 pt-0.5">
-          {test.notes}
-        </p>
-      )}
-
-      {/* 3-Column Mobile Data Strip Pattern (Section 5.2) */}
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-left">
+      {/* 2-Column Mobile Data Strip */}
+      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-left">
         <div>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
             Date
@@ -137,26 +127,6 @@ export const TestCard: React.FC<TestCardProps> = ({
           <span className="font-semibold text-slate-800 text-[11px] sm:text-xs truncate block">
             {test.testTime} ({test.durationMinutes || 90}m)
           </span>
-        </div>
-
-        <div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Portal Access
-          </span>
-          {test.testLink ? (
-            <a
-              href={test.testLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-blue-600 text-[11px] sm:text-xs truncate block hover:underline"
-            >
-              Launch URL
-            </a>
-          ) : (
-            <span className="text-slate-400 text-[11px] sm:text-xs truncate block">
-              Not Linked
-            </span>
-          )}
         </div>
       </div>
     </div>

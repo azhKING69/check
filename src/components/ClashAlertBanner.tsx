@@ -33,7 +33,7 @@ export const ClashAlertBanner: React.FC<ClashAlertBannerProps> = ({ clashes }) =
                 </span>
               </div>
               <p className="text-xs text-rose-700 mt-0.5">
-                Overlapping examination windows require scheduling coordination or platform priority.
+                Overlapping examination windows require scheduling coordination or priority.
               </p>
 
               <div className="mt-3 space-y-2">
@@ -47,11 +47,11 @@ export const ClashAlertBanner: React.FC<ClashAlertBannerProps> = ({ clashes }) =
                         {c.test1.testDate}:
                       </span>
                       <span className="font-semibold text-slate-900 truncate">
-                        Candidate 1: {c.test1.companyName} ({c.test1.testTime})
+                        PIPI: {c.test1.companyName} ({c.test1.testTime})
                       </span>
                       <span className="text-slate-400 shrink-0">-</span>
                       <span className="font-semibold text-purple-700 truncate">
-                        Candidate 2: {c.test2.companyName} ({c.test2.testTime})
+                        Chintu: {c.test2.companyName} ({c.test2.testTime})
                       </span>
                     </div>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 shrink-0">
@@ -82,7 +82,7 @@ export const ClashAlertBanner: React.FC<ClashAlertBannerProps> = ({ clashes }) =
                 </span>
               </div>
               <p className="text-xs text-amber-800 mt-0.5">
-                Both candidates have examinations scheduled on the same calendar date, but hours do not directly overlap.
+                PIPI and Chintu both have assessments scheduled on the same calendar date, but hours do not overlap.
               </p>
             </div>
           </div>

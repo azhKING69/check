@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { PlacementTest } from '@/types/placement';
 import { getTestDateTime } from '@/lib/clashDetector';
 import { getGoogleCalendarUrl } from '@/lib/calendar';
-import { Clock, Calendar, CalendarPlus, ExternalLink } from 'lucide-react';
+import { Clock, Calendar, CalendarPlus } from 'lucide-react';
 
 interface NextTestBannerProps {
   upcomingTests: PlacementTest[];
@@ -62,7 +62,7 @@ export const NextTestBanner: React.FC<NextTestBannerProps> = ({ upcomingTests })
   return (
     <div className="p-4 sm:p-5 rounded-xl bg-white border border-slate-200 shadow-xs">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Left Specification Column */}
+        {/* Left Column */}
         <div className="space-y-1.5">
           <div className="flex items-center space-x-2">
             <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60">
@@ -77,7 +77,7 @@ export const NextTestBanner: React.FC<NextTestBannerProps> = ({ upcomingTests })
                   : 'bg-purple-50 text-purple-700 border-purple-200/60'
               }`}
             >
-              {nextTest.track === 'mine' ? 'Candidate 1' : 'Candidate 2'}
+              {nextTest.track === 'mine' ? 'PIPI' : 'Chintu'}
             </span>
           </div>
 
@@ -105,7 +105,6 @@ export const NextTestBanner: React.FC<NextTestBannerProps> = ({ upcomingTests })
 
         {/* Right Countdown & Action Suite */}
         <div className="flex flex-col sm:items-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-          {/* Strict Tabular Numbers Countdown */}
           <div className="flex items-center space-x-1.5">
             {timeLeft && !timeLeft.isPast ? (
               <>
@@ -143,28 +142,15 @@ export const NextTestBanner: React.FC<NextTestBannerProps> = ({ upcomingTests })
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
-            {nextTest.testLink && (
-              <a
-                href={nextTest.testLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer shadow-xs"
-              >
-                <span>Portal Link</span>
-                <ExternalLink className="w-3 h-3 text-slate-400" />
-              </a>
-            )}
-            <a
-              href={getGoogleCalendarUrl(nextTest)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shadow-xs"
-            >
-              <CalendarPlus className="w-3.5 h-3.5" />
-              <span>Add to Calendar</span>
-            </a>
-          </div>
+          <a
+            href={getGoogleCalendarUrl(nextTest)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shadow-xs"
+          >
+            <CalendarPlus className="w-3.5 h-3.5" />
+            <span>Add to Calendar</span>
+          </a>
         </div>
       </div>
     </div>

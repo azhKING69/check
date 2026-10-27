@@ -9,16 +9,13 @@ import {
   deletePlacementTest,
 } from '@/lib/storage';
 import { detectClashes, getTestDateTime } from '@/lib/clashDetector';
-import { isFirebaseConfigured } from '@/lib/firebase';
 import { Header } from '@/components/Header';
-import { KpiRibbon } from '@/components/KpiRibbon';
 import { NextTestBanner } from '@/components/NextTestBanner';
 import { ClashAlertBanner } from '@/components/ClashAlertBanner';
 import { TestTable } from '@/components/TestTable';
 import { TestCard } from '@/components/TestCard';
 import { TestModal } from '@/components/TestModal';
 import { AdminPinModal } from '@/components/AdminPinModal';
-import { FirebaseSetupModal } from '@/components/FirebaseSetupModal';
 import {
   Search,
   Plus,
@@ -40,7 +37,6 @@ export default function PlacementNoticeBoard() {
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [editingTest, setEditingTest] = useState<PlacementTest | null>(null);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
 
   // Check admin session on mount
   useEffect(() => {
@@ -89,7 +85,7 @@ export default function PlacementNoticeBoard() {
     });
   }, [tests]);
 
-  // Filter by track (mine / hers / combined)
+  // Filter by track (PIPI / Chintu / combined)
   const trackFilteredTests = useMemo(() => {
     if (activeTrack === 'combined') return sortedAllTests;
     return sortedAllTests.filter((t) => t.track === activeTrack);
@@ -134,8 +130,7 @@ export default function PlacementNoticeBoard() {
       list = list.filter(
         (t) =>
           t.companyName.toLowerCase().includes(q) ||
-          t.profileName.toLowerCase().includes(q) ||
-          t.notes?.toLowerCase().includes(q)
+          t.profileName.toLowerCase().includes(q)
       );
     }
 
@@ -164,7 +159,6 @@ export default function PlacementNoticeBoard() {
       await updatePlacementTest(editingTest.id, input);
     } else {
       await addPlacementTest(input);
-      // Auto-switch track if needed so user immediately sees their created record
       if (activeTrack !== 'combined' && activeTrack !== input.track) {
         setActiveTrack(input.track);
       }
@@ -175,24 +169,20 @@ export default function PlacementNoticeBoard() {
   // CSV Export for tabular records
   const handleExportCSV = () => {
     const headers = [
-      'Candidate Track',
+      'Candidate',
       'Organization',
       'Role Profile',
       'Assessment Date',
       'Slot Time',
       'Duration (Minutes)',
-      'Portal Link',
-      'Instructions',
     ];
     const rows = trackFilteredTests.map((t) => [
-      t.track === 'mine' ? 'Candidate 1 (Primary)' : 'Candidate 2 (Partner)',
+      t.track === 'mine' ? 'PIPI' : 'Chintu',
       `"${t.companyName.replace(/"/g, '""')}"`,
       `"${t.profileName.replace(/"/g, '""')}"`,
       t.testDate,
       t.testTime,
       t.durationMinutes || 90,
-      `"${t.testLink || ''}"`,
-      `"${(t.notes || '').replace(/"/g, '""')}"`,
     ]);
 
     const csvContent =
@@ -218,7 +208,7 @@ export default function PlacementNoticeBoard() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-[#111827] flex flex-col w-full font-sans antialiased">
-      {/* Institutional Top Header */}
+      {/* Header */}
       <Header
         activeTrack={activeTrack}
         setActiveTrack={setActiveTrack}
@@ -227,26 +217,17 @@ export default function PlacementNoticeBoard() {
         onLockAdmin={handleLockAdmin}
         onOpenAddModal={handleOpenAdd}
         clashCount={clashes.filter((c) => c.type === 'direct_clash').length}
-        isFirebaseActive={isFirebaseConfigured}
-        onOpenCloudModal={() => setIsCloudModalOpen(true)}
       />
 
       {/* Main Viewport Container */}
       <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 space-y-4 sm:space-y-6">
-        {/* KPI Metric Ribbon (2-column mobile, 4-column desktop) */}
-        <KpiRibbon
-          upcomingTests={upcomingTests}
-          pastTests={pastTests}
-          clashes={clashes}
-        />
-
         {/* Immediate Assessment Focus Card */}
         <NextTestBanner upcomingTests={upcomingTests} />
 
         {/* Slot Conflict Radar */}
         <ClashAlertBanner clashes={clashes} />
 
-        {/* Action Bar & Controls: Strict Single-Row Mobile Header Rule */}
+        {/* Action Bar & Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 min-w-0 pt-1">
           {/* Status Tabs: Upcoming vs Past vs All */}
           <div className="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold self-start border border-slate-200/60">
@@ -288,7 +269,7 @@ export default function PlacementNoticeBoard() {
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
               <input
                 type="text"
-                placeholder="Filter by company or profile..."
+                placeholder="Filter company or profile..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-hidden focus:border-slate-900 transition"
@@ -339,7 +320,7 @@ export default function PlacementNoticeBoard() {
           </div>
         </div>
 
-        {/* Desktop Tabular View (Section 6.2) */}
+        {/* Desktop Tabular View */}
         {viewMode === 'table' ? (
           <div className="hidden sm:block">
             <TestTable
@@ -352,7 +333,7 @@ export default function PlacementNoticeBoard() {
           </div>
         ) : null}
 
-        {/* Mobile View: 3-Column Data Strip Pattern (Section 5.2) */}
+        {/* Mobile View / Cards */}
         <div
           className={`${
             viewMode === 'table' ? 'sm:hidden' : ''
@@ -393,7 +374,7 @@ export default function PlacementNoticeBoard() {
         </button>
       )}
 
-      {/* Institutional Modals */}
+      {/* Modals */}
       <TestModal
         isOpen={isTestModalOpen}
         onClose={() => setIsTestModalOpen(false)}
@@ -406,12 +387,6 @@ export default function PlacementNoticeBoard() {
         isOpen={isPinModalOpen}
         onClose={() => setIsPinModalOpen(false)}
         onSuccess={() => setIsAdmin(true)}
-      />
-
-      <FirebaseSetupModal
-        isOpen={isCloudModalOpen}
-        onClose={() => setIsCloudModalOpen(false)}
-        isFirebaseActive={isFirebaseConfigured}
       />
     </div>
   );

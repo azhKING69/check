@@ -9,12 +9,10 @@ export function getGoogleCalendarUrl(test: PlacementTest): string {
   const formatTime = (d: Date) =>
     d.toISOString().replace(/-|:|\.\d\d\d/g, '');
 
-  const trackLabel = test.track === 'mine' ? 'Candidate 1 (Primary)' : 'Candidate 2 (Partner)';
+  const trackLabel = test.track === 'mine' ? 'PIPI' : 'Chintu';
   const title = encodeURIComponent(`Assessment: ${test.companyName} (${test.profileName})`);
   const details = encodeURIComponent(
-    `Placement Assessment\nCompany: ${test.companyName}\nRole: ${test.profileName}\nTrack: ${trackLabel}\n${
-      test.testLink ? `Portal URL: ${test.testLink}\n` : ''
-    }${test.notes ? `Instructions: ${test.notes}\n` : ''}`
+    `Placement Assessment\nCompany: ${test.companyName}\nRole: ${test.profileName}\nCandidate: ${trackLabel}`
   );
   const dates = `${formatTime(start)}/${formatTime(end)}`;
 
@@ -29,17 +27,19 @@ export function downloadIcsFile(test: PlacementTest) {
   const formatTime = (d: Date) =>
     d.toISOString().replace(/-|:|\.\d\d\d/g, '');
 
+  const trackLabel = test.track === 'mine' ? 'PIPI' : 'Chintu';
+
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Placement Institutional Ledger//EN',
+    'PRODID:-//Placement Ledger//EN',
     'BEGIN:VEVENT',
     `UID:${test.id}@placementledger.app`,
     `DTSTAMP:${formatTime(new Date())}`,
     `DTSTART:${formatTime(start)}`,
     `DTEND:${formatTime(end)}`,
     `SUMMARY:Assessment: ${test.companyName} (${test.profileName})`,
-    `DESCRIPTION:${test.companyName} - ${test.profileName}\\n${test.notes || ''}`,
+    `DESCRIPTION:${test.companyName} - ${test.profileName}\\nCandidate: ${trackLabel}`,
     'STATUS:CONFIRMED',
     'END:VEVENT',
     'END:VCALENDAR',
