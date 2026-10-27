@@ -164,6 +164,11 @@ export default function PlacementNoticeBoard() {
       await updatePlacementTest(editingTest.id, input);
     } else {
       await addPlacementTest(input);
+      // Auto-switch track if needed so user immediately sees their created record
+      if (activeTrack !== 'combined' && activeTrack !== input.track) {
+        setActiveTrack(input.track);
+      }
+      setActiveTab('upcoming');
     }
   };
 

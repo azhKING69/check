@@ -43,7 +43,8 @@ export const TestModal: React.FC<TestModalProps> = ({
       setTrack(defaultTrack);
       setCompanyName('');
       setProfileName('');
-      setTestDate(new Date().toISOString().split('T')[0]);
+      const tomorrow = new Date(Date.now() + 86400000);
+      setTestDate(tomorrow.toISOString().split('T')[0]);
       setTestTime('18:00');
       setDurationMinutes(90);
       setTestLink('');
