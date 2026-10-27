@@ -2,12 +2,10 @@
 
 import React from 'react';
 import { PlacementTest, ClashInfo } from '@/types/placement';
-import { getGoogleCalendarUrl } from '@/lib/calendar';
 import {
   Clock,
   Edit2,
   Trash2,
-  CalendarPlus,
   AlertCircle,
   FileText,
 } from 'lucide-react';
@@ -58,7 +56,7 @@ export const TestTable: React.FC<TestTableProps> = ({
               <th className="py-2.5 px-3 sm:px-4">Company</th>
               <th className="py-2.5 px-3 sm:px-4">Role Profile</th>
               <th className="py-2.5 px-3 sm:px-4">Date & Slot</th>
-              <th className="py-2.5 px-3 sm:px-4 text-right">Actions</th>
+              {isAdmin && <th className="py-2.5 px-3 sm:px-4 text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -126,39 +124,27 @@ export const TestTable: React.FC<TestTableProps> = ({
                     </div>
                   </td>
 
-                  {/* Action Suite */}
-                  <td className="py-3 px-3 sm:px-4 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end space-x-1">
-                      <a
-                        href={getGoogleCalendarUrl(test)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Add to Google Calendar"
-                        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-                      >
-                        <CalendarPlus className="w-3.5 h-3.5" />
-                      </a>
-
-                      {isAdmin && (
-                        <>
-                          <button
-                            onClick={() => onEdit(test)}
-                            title="Edit Record"
-                            className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition cursor-pointer"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onDelete(test.id, test.companyName)}
-                            title="Delete Record"
-                            className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+                  {/* Admin Actions */}
+                  {isAdmin && (
+                    <td className="py-3 px-3 sm:px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end space-x-1">
+                        <button
+                          onClick={() => onEdit(test)}
+                          title="Edit Record"
+                          className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(test.id, test.companyName)}
+                          title="Delete Record"
+                          className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}

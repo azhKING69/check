@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { PlacementTest } from '@/types/placement';
 import { getTestDateTime } from '@/lib/clashDetector';
-import { getGoogleCalendarUrl } from '@/lib/calendar';
-import { Clock, Calendar, CalendarPlus } from 'lucide-react';
+import { Clock, Calendar } from 'lucide-react';
 
 interface NextTestBannerProps {
   upcomingTests: PlacementTest[];
@@ -103,54 +102,42 @@ export const NextTestBanner: React.FC<NextTestBannerProps> = ({ upcomingTests })
           </div>
         </div>
 
-        {/* Right Countdown & Action Suite */}
-        <div className="flex flex-col sm:items-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-          <div className="flex items-center space-x-1.5">
-            {timeLeft && !timeLeft.isPast ? (
-              <>
-                {timeLeft.days > 0 && (
-                  <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
-                    <span className="text-base sm:text-lg font-extrabold font-mono text-slate-900 leading-none">
-                      {timeLeft.days}
-                    </span>
-                    <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Days</span>
-                  </div>
-                )}
+        {/* Right Countdown Boxes */}
+        <div className="flex items-center space-x-1.5 self-start sm:self-center">
+          {timeLeft && !timeLeft.isPast ? (
+            <>
+              {timeLeft.days > 0 && (
                 <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
                   <span className="text-base sm:text-lg font-extrabold font-mono text-slate-900 leading-none">
-                    {String(timeLeft.hours).padStart(2, '0')}
+                    {timeLeft.days}
                   </span>
-                  <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Hours</span>
+                  <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Days</span>
                 </div>
-                <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
-                  <span className="text-base sm:text-lg font-extrabold font-mono text-slate-900 leading-none">
-                    {String(timeLeft.minutes).padStart(2, '0')}
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Mins</span>
-                </div>
-                <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
-                  <span className="text-base sm:text-lg font-extrabold font-mono text-blue-600 leading-none">
-                    {String(timeLeft.seconds).padStart(2, '0')}
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Secs</span>
-                </div>
-              </>
-            ) : (
-              <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                Assessment In Progress
-              </span>
-            )}
-          </div>
-
-          <a
-            href={getGoogleCalendarUrl(nextTest)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shadow-xs"
-          >
-            <CalendarPlus className="w-3.5 h-3.5" />
-            <span>Add to Calendar</span>
-          </a>
+              )}
+              <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
+                <span className="text-base sm:text-lg font-extrabold font-mono text-slate-900 leading-none">
+                  {String(timeLeft.hours).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Hours</span>
+              </div>
+              <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
+                <span className="text-base sm:text-lg font-extrabold font-mono text-slate-900 leading-none">
+                  {String(timeLeft.minutes).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Mins</span>
+              </div>
+              <div className="flex flex-col items-center bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg min-w-[46px]">
+                <span className="text-base sm:text-lg font-extrabold font-mono text-blue-600 leading-none">
+                  {String(timeLeft.seconds).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] uppercase font-bold text-slate-400 mt-1">Secs</span>
+              </div>
+            </>
+          ) : (
+            <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+              Assessment In Progress
+            </span>
+          )}
         </div>
       </div>
     </div>

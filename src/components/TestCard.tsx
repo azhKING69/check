@@ -2,11 +2,9 @@
 
 import React from 'react';
 import { PlacementTest, ClashInfo } from '@/types/placement';
-import { getGoogleCalendarUrl } from '@/lib/calendar';
 import {
   Edit2,
   Trash2,
-  CalendarPlus,
   AlertCircle,
 } from 'lucide-react';
 
@@ -77,36 +75,24 @@ export const TestCard: React.FC<TestCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-1 shrink-0">
-          <a
-            href={getGoogleCalendarUrl(test)}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Add to Google Calendar"
-            className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
-          >
-            <CalendarPlus className="w-3.5 h-3.5" />
-          </a>
-
-          {isAdmin && (
-            <>
-              <button
-                onClick={() => onEdit(test)}
-                title="Edit Record"
-                className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition cursor-pointer"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onDelete(test.id, test.companyName)}
-                title="Delete Record"
-                className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </>
-          )}
-        </div>
+        {isAdmin && (
+          <div className="flex items-center space-x-1 shrink-0">
+            <button
+              onClick={() => onEdit(test)}
+              title="Edit Record"
+              className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition cursor-pointer"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onDelete(test.id, test.companyName)}
+              title="Delete Record"
+              className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2-Column Mobile Data Strip */}

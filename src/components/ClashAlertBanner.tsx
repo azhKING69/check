@@ -18,45 +18,70 @@ export const ClashAlertBanner: React.FC<ClashAlertBannerProps> = ({ clashes }) =
     <div className="space-y-3">
       {/* Direct Slot Overlap Alert */}
       {directClashes.length > 0 && (
-        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 sm:p-5 shadow-xs">
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 sm:p-5 shadow-xs">
           <div className="flex items-start space-x-3">
             <div className="p-1.5 rounded-lg bg-rose-100 text-rose-700 shrink-0 mt-0.5">
               <AlertCircle className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <h3 className="text-sm font-bold text-rose-900 tracking-tight">
                   Direct Slot Conflict Detected
                 </h3>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200">
-                  {directClashes.length} Overlapping {directClashes.length === 1 ? 'Slot' : 'Slots'}
+                  {directClashes.length} {directClashes.length === 1 ? 'Overlap' : 'Overlaps'}
                 </span>
               </div>
-              <p className="text-xs text-rose-700 mt-0.5">
-                Overlapping examination windows require scheduling coordination or priority.
-              </p>
 
-              <div className="mt-3 space-y-2">
+              {/* Mobile-Friendly Conflict Cards (Zero Truncation) */}
+              <div className="mt-3 space-y-2.5">
                 {directClashes.map((c, i) => (
                   <div
                     key={i}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-white border border-rose-200/80 text-xs shadow-2xs"
+                    className="p-3 rounded-lg bg-white border border-rose-200/80 text-xs shadow-2xs space-y-2"
                   >
-                    <div className="flex items-center space-x-2 min-w-0">
-                      <span className="font-bold text-slate-900 shrink-0">
-                        {c.test1.testDate}:
+                    {/* Header Row: Date & Overlap Status */}
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                      <span className="font-bold text-slate-900 text-xs">
+                        {c.test1.testDate}
                       </span>
-                      <span className="font-semibold text-slate-900 truncate">
-                        PIPI: {c.test1.companyName} ({c.test1.testTime})
-                      </span>
-                      <span className="text-slate-400 shrink-0">-</span>
-                      <span className="font-semibold text-purple-700 truncate">
-                        Chintu: {c.test2.companyName} ({c.test2.testTime})
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                        Direct Overlap
                       </span>
                     </div>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200 shrink-0">
-                      Direct Overlap
-                    </span>
+
+                    {/* Comparison Rows */}
+                    <div className="space-y-1.5 text-xs">
+                      {/* PIPI */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/80 shrink-0">
+                            PIPI
+                          </span>
+                          <span className="font-bold text-slate-900 truncate">
+                            {c.test1.companyName}
+                          </span>
+                        </div>
+                        <span className="font-mono font-semibold text-slate-700 shrink-0">
+                          {c.test1.testTime}
+                        </span>
+                      </div>
+
+                      {/* Chintu */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200/80 shrink-0">
+                            Chintu
+                          </span>
+                          <span className="font-bold text-purple-900 truncate">
+                            {c.test2.companyName}
+                          </span>
+                        </div>
+                        <span className="font-mono font-semibold text-purple-700 shrink-0">
+                          {c.test2.testTime}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
